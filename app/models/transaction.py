@@ -2,7 +2,14 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, N
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.session import Base
-from app.schemas.transaction import TransactionStatus
+import enum
+
+
+class TransactionStatus(str, enum.Enum):
+    NEW = "NEW"
+    PENDING = "PENDING"
+    PROCESSED = "PROCESSED"
+    FAIL = "FAIL"
 
 
 class Transaction(Base):

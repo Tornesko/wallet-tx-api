@@ -1,14 +1,10 @@
 from pydantic import BaseModel
 from datetime import datetime
 from decimal import Decimal
-from enum import Enum
 
 
-class TransactionStatus(str, Enum):
-    NEW = "NEW"
-    PENDING = "PENDING"
-    PROCESSED = "PROCESSED"
-    FAIL = "FAIL"
+
+
 
 
 class TransactionRead(BaseModel):
