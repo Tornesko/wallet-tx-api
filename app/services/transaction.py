@@ -1,10 +1,39 @@
+import uuid
 from datetime import datetime, timedelta
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from app.models.transaction import Transaction, TransactionStatus
-from app.models.wallet import Wallet, WalletStatus
+from app.models.transaction import Transaction, Wallet
+from app.schemas.transaction import WalletCreate, WalletStatus, TransactionStatus
 from app.services.callbacks import task_retry_callback
+
+
+async def create_wallet(data: WalletCreate, db: AsyncSession) -> Wallet:
+    generated_address = uuid.uuid4().hex
+
+    wallet = Wallet(
+        address=generated_address,
+        currency=data.currency,
+        network=data.network,
+        status=WalletStatus.NEW,
+        callback_url=str(data.callback_url) if data.callback_url else None,
+    )
+
+    db.add(wallet)
+    await db.commit()
+    await db.refresh(wallet)
+
+    return wallet
+
+
+async def get_wallet_with_transactions(wallet_address: str, db: AsyncSession):
+    result = await db.execute(
+        select(Wallet)
+        .options(selectinload(Wallet.transactions))
+        .where(Wallet.address == wallet_address)
+    )
+    return result.scalar_one_or_none()
 
 
 async def on_new_chain_tx(wallet: Wallet, tx_hash: str, amount: float, db: AsyncSession):

@@ -7,7 +7,7 @@ from alembic import context
 
 from app.core.config import settings
 from app.db.session import Base
-from app.models import wallet, transaction, whitelist
+from app.models import transaction, whitelist
 
 from sqlalchemy.ext.asyncio import async_engine_from_config
 

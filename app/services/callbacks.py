@@ -10,10 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.db.session import AsyncSessionLocal
-from app.models.transaction import Transaction
-from app.models.wallet import Wallet
-from app.schemas.wallet import WalletDetail
-from app.schemas.transaction import TransactionRead
+from app.models.transaction import Transaction, Wallet
+from app.schemas.transaction import TransactionRead, WalletDetail
 
 
 def default_serializer(obj):
