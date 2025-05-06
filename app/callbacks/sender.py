@@ -13,11 +13,7 @@ async def send_callback(wallet: Wallet, tx: Transaction):
         "amount": float(tx.amount),
     }
 
-    try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(wallet.callback_url, json=payload, timeout=5)
-            resp.raise_for_status()
-        return True
-    except Exception as e:
-        print(f"Callback failed for wallet {wallet.id}: {e}")
-        return False
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(wallet.callback_url, json=payload, timeout=5)
+        resp.raise_for_status()
+    return True

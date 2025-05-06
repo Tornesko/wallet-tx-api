@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import datetime
 from enum import Enum
 from typing import List
-from .transaction import TransactionRead
+from transaction import TransactionRead
 
 
 class WalletCreate(BaseModel):

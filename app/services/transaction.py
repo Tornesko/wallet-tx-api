@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.transaction import Transaction
 from app.models.wallet import Wallet, WalletStatus
 from app.schemas.transaction import TransactionStatus
-from app.services.node import get_confirmations_from_node
+from app.services.get_confirmation import get_confirmations
 
 
 async def on_new_chain_tx(wallet: Wallet, tx_hash: str, amount: float, db: AsyncSession):
@@ -31,7 +31,7 @@ async def check_confirmations(db: AsyncSession, required: int = 10):
     transactions = result.scalars().all()
 
     for tx in transactions:
-        current = await get_confirmations_from_node(tx.tx_hash)
+        current = await get_confirmations(tx.tx_hash)
         print(f"current: {current}")
         if current >= required:
             tx.status = TransactionStatus.PROCESSED

@@ -26,4 +26,3 @@ class IncomingTransaction(BaseModel):
     wallet_address: str
     tx_hash: str
     amount: float
-
