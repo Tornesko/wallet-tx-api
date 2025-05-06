@@ -68,7 +68,7 @@ async def retry_callback(wallet_id: int):
             wallet_data = WalletDetail.model_validate(wallet)
             success = await send_callback(wallet_data, db)
             if not success:
-                raise Exception("Callback failed")
+                print("Callback failed")
 
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=180, max_retries=3)

@@ -27,11 +27,11 @@ async def create_wallet(data: WalletCreate, db: AsyncSession) -> Wallet:
     return wallet
 
 
-async def get_wallet_with_transactions(wallet_address: str, db: AsyncSession):
+async def get_wallet_with_transactions(wallet_id: int, db: AsyncSession):
     result = await db.execute(
         select(Wallet)
         .options(selectinload(Wallet.transactions))
-        .where(Wallet.address == wallet_address)
+        .where(Wallet.id == wallet_id)
     )
     return result.scalar_one_or_none()
 
