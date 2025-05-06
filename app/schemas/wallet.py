@@ -1,9 +1,9 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, ConfigDict
 from typing import Optional
 from datetime import datetime
 from enum import Enum
 from typing import List
-from transaction import TransactionRead
+from .transaction import TransactionRead
 
 
 class WalletCreate(BaseModel):
@@ -26,9 +26,9 @@ class WalletRead(BaseModel):
     network: str
     status: WalletStatus
     created_at: datetime
+    callback_url: Optional[HttpUrl] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class WalletDetail(WalletRead):

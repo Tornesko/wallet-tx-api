@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from celery import Celery
 from celery.schedules import crontab
 
@@ -14,7 +16,7 @@ celery_app = Celery(
 celery_app.conf.beat_schedule = {
     "check-confirmations-every-minute": {
         "task": task_check_confirmations.name,
-        "schedule": 60.0,
+        "schedule": timedelta(minutes=1),
     },
     "fail-stale-wallets-daily": {
         "task": task_fail_stale.name,

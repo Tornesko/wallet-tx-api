@@ -1,10 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from decimal import Decimal
 
-
-
-
+from app.models.transaction import TransactionStatus
 
 
 class TransactionRead(BaseModel):
@@ -14,8 +12,7 @@ class TransactionRead(BaseModel):
     status: TransactionStatus
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class IncomingTransaction(BaseModel):
