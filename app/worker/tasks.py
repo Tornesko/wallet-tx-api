@@ -1,3 +1,4 @@
+from app.services.callbacks import retry_callback
 from app.services.transaction import check_confirmations, fail_stale_wallets
 from celery import shared_task
 from app.db.session import AsyncSessionLocal
@@ -26,3 +27,5 @@ def task_fail_stale():
             await fail_stale_wallets(db)
 
     asyncio.run(run())
+
+

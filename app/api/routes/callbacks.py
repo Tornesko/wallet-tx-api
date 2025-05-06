@@ -1,10 +1,10 @@
 from fastapi import APIRouter
-from app.services.callbacks import task_retry_callback
+from app.services.callbacks import retry_callback
 
 router = APIRouter(prefix="/callbacks", tags=["callbacks"])
 
 
-@router.post("/retry/{wallet_id}")
-async def retry_callback(wallet_id: int):
-    task_retry_callback.delay(wallet_id)
-    return {"detail": f"Retry callback task scheduled for wallet_id {wallet_id}"}
+@router.post("/retry-direct/{wallet_id}")
+async def retry_callback_direct(wallet_id: int):
+    await retry_callback(wallet_id)
+    return {"detail": f"Callback manually triggered for wallet {wallet_id}"}

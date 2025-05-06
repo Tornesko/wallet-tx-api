@@ -1,4 +1,8 @@
 import asyncio
+import json
+from datetime import datetime
+from decimal import Decimal
+
 import httpx
 from celery import shared_task
 from sqlalchemy import select
@@ -12,8 +16,16 @@ from app.schemas.wallet import WalletDetail
 from app.schemas.transaction import TransactionRead
 
 
+def default_serializer(obj):
+    if isinstance(obj, Decimal):
+        return str(obj)
+    elif isinstance(obj, datetime):
+        return obj.isoformat()
+    raise TypeError(f"Type {type(obj)} not serializable")
+
+
 async def send_callback(wallet: WalletDetail, db: AsyncSession) -> bool:
-    print("SEEEEEND", wallet.callback_ur)
+    print("SEEEEEND", wallet.callback_url)
     if not wallet.callback_url:
         return True
 
@@ -25,7 +37,10 @@ async def send_callback(wallet: WalletDetail, db: AsyncSession) -> bool:
     transactions = result.scalars().all()
 
     transaction_data = [
-        TransactionRead.model_validate(tx).model_dump()
+        {
+            **TransactionRead.model_validate(tx).model_dump(),
+            "amount": str(tx.amount)  # Decimal isn't JSON serializable
+        }
         for tx in transactions
     ]
 
@@ -38,25 +53,26 @@ async def send_callback(wallet: WalletDetail, db: AsyncSession) -> bool:
         "created_at": wallet.created_at.isoformat(),
         "transactions": transaction_data,
     }
+    json_payload = json.dumps(payload, default=default_serializer)
 
     async with httpx.AsyncClient(timeout=10) as client:
-        response = await client.post(wallet.callback_url, json=payload)
+        response = await client.post(str(wallet.callback_url), json=json_payload)
         return response.status_code == 200
+
+
+async def retry_callback(wallet_id: int):
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            select(Wallet).options(selectinload(Wallet.transactions)).where(Wallet.id == wallet_id)
+        )
+        wallet = result.scalar_one_or_none()
+        if wallet:
+            wallet_data = WalletDetail.model_validate(wallet)
+            success = await send_callback(wallet_data, db)
+            if not success:
+                raise Exception("Callback failed")
 
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=180, max_retries=3)
 def task_retry_callback(self, wallet_id: int):
-    print("MIMIMIMIMI")
-    async def run():
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                select(Wallet).options(selectinload(Wallet.transactions)).where(Wallet.id == wallet_id)
-            )
-            wallet = result.scalar_one_or_none()
-            if wallet:
-                wallet_data = WalletDetail.model_validate(wallet)
-                success = await send_callback(wallet_data, db)
-                if not success:
-                    raise Exception("Callback failed — will retry")
-
-    asyncio.run(run())
+    asyncio.run(retry_callback(wallet_id))
