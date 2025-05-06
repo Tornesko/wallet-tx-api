@@ -24,3 +24,8 @@ docker-compose.override.yml
 
 postgres_data/
 /.env
+
+celerybeat-schedule
+celerybeat-schedule.db
+.celery/
+
