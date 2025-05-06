@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.transaction import Transaction, TransactionStatus
 from app.models.wallet import Wallet, WalletStatus
-from app.services.get_confirmation import get_confirmations
 from app.services.callbacks import task_retry_callback
 
 
@@ -26,21 +25,38 @@ async def on_new_chain_tx(wallet: Wallet, tx_hash: str, amount: float, db: Async
 
 
 async def check_confirmations(db: AsyncSession, required: int = 10):
-    result = await db.execute(
-        select(Transaction).where(Transaction.status == TransactionStatus.PENDING)
+    """mock confirmations"""
+    wallets_result = await db.execute(
+        select(Wallet).where(Wallet.status == WalletStatus.PENDING)
     )
-    transactions = result.scalars().all()
+    wallets = wallets_result.scalars().all()
 
-    for tx in transactions:
-        current = await get_confirmations(tx.tx_hash)
-        if current >= required:
-            tx.status = TransactionStatus.PROCESSED
-            wallet = await db.get(Wallet, tx.wallet_id)
+    for wallet in wallets:
+        tx_result = await db.execute(
+            select(Transaction)
+            .where(Transaction.wallet_id == wallet.id)
+            .order_by(Transaction.created_at)
+        )
+        transactions = tx_result.scalars().all()
+
+        if not transactions:
+            continue
+
+        first_tx = transactions[0]
+
+        first_tx.confirmations = min(first_tx.confirmations + 1, required)
+
+        if first_tx.confirmations >= required:
+            first_tx.status = TransactionStatus.PROCESSED
             wallet.status = WalletStatus.PROCESSED
+
             if wallet.callback_url:
                 task_retry_callback.delay(wallet.id)
-        else:
-            tx.confirmations = current
+
+        for tx in transactions[1:]:
+            tx.confirmations = min(tx.confirmations + 1, required)
+            if tx.status != TransactionStatus.PROCESSED:
+                tx.status = TransactionStatus.NEW
 
     await db.commit()
 

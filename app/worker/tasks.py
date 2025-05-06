@@ -11,8 +11,7 @@ nest_asyncio.apply()
 
 @shared_task
 def task_check_confirmations():
-    print("task_check_confirmations started")
-
+    """mock confirmations"""
     async def run():
         async with AsyncSessionLocal() as db:
             await check_confirmations(db)

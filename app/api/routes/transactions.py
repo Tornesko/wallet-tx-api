@@ -5,12 +5,27 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.models.wallet import Wallet
 from app.schemas.transaction import IncomingTransaction
+from app.schemas.wallet import WalletCreate, WalletRead, WalletDetail
 from app.services.transaction import on_new_chain_tx
+from app.services.wallet import get_wallet_with_transactions, create_wallet
 
-router = APIRouter(prefix="/transactions", tags=["transactions"])
+router = APIRouter()
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/transactions", response_model=WalletRead, status_code=201)
+async def create_transaction_view(wallet: WalletCreate, db: AsyncSession = Depends(get_db)):
+    return await create_wallet(wallet, db)
+
+
+@router.get("/transactions/{transaction_id}", response_model=WalletDetail)
+async def read_transaction(wallet_id: int, db: AsyncSession = Depends(get_db)):
+    wallet = await get_wallet_with_transactions(wallet_id, db)
+    if not wallet:
+        raise HTTPException(status_code=404, detail="Wallet not found")
+    return wallet
+
+
+@router.post("/register_transaction", status_code=status.HTTP_201_CREATED)
 async def register_transaction(
         payload: IncomingTransaction,
         db: AsyncSession = Depends(get_db),
