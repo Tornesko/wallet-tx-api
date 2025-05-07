@@ -38,38 +38,37 @@ async def get_wallet_with_transactions(wallet_id: int, db: AsyncSession):
     return result.scalar_one_or_none()
 
 
-async def on_new_chain_tx(wallet: Wallet, tx_hash: str, amount: float, db: AsyncSession) -> Optional[Transaction]:
-    existing_tx = await db.execute(
-        select(Transaction)
-        .where(Transaction.tx_hash == tx_hash)
+async def process_wallet_transaction(wallet: Wallet, tx_hash: str, amount: float, db: AsyncSession) -> Optional[Transaction]:
+    existing_transaction_result = await db.execute(
+        select(Transaction).where(Transaction.tx_hash == tx_hash)
     )
-    if existing_tx.scalar_one_or_none():
+    if existing_transaction_result.scalar_one_or_none():
         return None
 
-    txs_result = await db.execute(
+    transactions_result = await db.execute(
         select(Transaction)
         .where(Transaction.wallet_id == wallet.id)
         .order_by(Transaction.created_at)
     )
-    txs = txs_result.scalars().all()
+    existing_transactions = transactions_result.scalars().all()
 
-    is_first = len(txs) == 0
+    is_first_transaction = len(existing_transactions) == 0
 
-    tx = Transaction(
+    transaction = Transaction(
         wallet_id=wallet.id,
         tx_hash=tx_hash,
         amount=amount,
         confirmations=0,
-        status=TransactionStatus.PENDING if is_first else TransactionStatus.NEW
+        status=TransactionStatus.PENDING if is_first_transaction else TransactionStatus.NEW
     )
-    db.add(tx)
+    db.add(transaction)
 
-    if is_first and wallet.status == WalletStatus.NEW:
+    if is_first_transaction and wallet.status == WalletStatus.NEW:
         wallet.status = WalletStatus.PENDING
 
     await db.commit()
-    await db.refresh(tx)
-    return tx
+    await db.refresh(transaction)
+    return transaction
 
 
 async def check_confirmations(db: AsyncSession, required: int = 10):

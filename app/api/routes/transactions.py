@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.models.transaction import Wallet
 from app.schemas.transaction import IncomingTransaction, WalletCreate, WalletRead, WalletDetail
-from app.services.transaction import on_new_chain_tx, get_wallet_with_transactions, create_wallet
+from app.services.transaction import process_wallet_transaction, get_wallet_with_transactions, create_wallet
 
 router = APIRouter()
 
@@ -36,8 +36,8 @@ async def register_transaction(
     if not wallet_obj:
         raise HTTPException(status_code=404, detail="Wallet not found")
 
-    tx = await on_new_chain_tx(wallet_obj, payload.tx_hash, payload.amount, db)
-    if tx is None:
+    transaction = await process_wallet_transaction(wallet_obj, payload.tx_hash, payload.amount, db)
+    if transaction is None:
         return {"detail": "Transaction already exists or ignored"}
 
-    return {"detail": "Transaction registered", "tx_hash": tx.tx_hash}
+    return {"detail": "Transaction registered", "tx_hash": transaction.tx_hash}
