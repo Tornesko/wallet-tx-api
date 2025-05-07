@@ -16,7 +16,7 @@ async def create_transaction_view(wallet: WalletCreate, db: AsyncSession = Depen
 
 
 @router.get("/transactions/{wallet_id}", response_model=WalletDetail)
-async def read_transaction(wallet_id: int, db: AsyncSession = Depends(get_db)):
+async def read_transaction(wallet_id: int, db: AsyncSession = Depends(get_db), ):
     wallet = await get_wallet_with_transactions(wallet_id, db)
     if not wallet:
         raise HTTPException(status_code=404, detail="Wallet not found")

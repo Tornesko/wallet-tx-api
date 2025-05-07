@@ -1,3 +1,5 @@
+import os
+
 from pydantic_settings import BaseSettings
 
 
@@ -17,3 +19,5 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+ENCRYPTION_ENABLED = os.getenv("ENCRYPTION_ENABLED", "true").lower() == "true"
