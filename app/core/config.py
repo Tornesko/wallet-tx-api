@@ -21,3 +21,11 @@ class Settings(BaseSettings):
 settings = Settings()
 
 ENCRYPTION_ENABLED = os.getenv("ENCRYPTION_ENABLED", "true").lower() == "true"
+
+ENCRYPTION_EXCLUDED_PATHS = [
+    "/docs",
+    "/openapi.json",
+    "/auth/login",
+    "/dev_test/encrypt",
+    "/dev_test/decrypt",
+]

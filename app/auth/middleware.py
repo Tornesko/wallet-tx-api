@@ -1,7 +1,7 @@
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request, Response
 from app.auth.encryption import decrypt, encrypt
-from app.core.config import ENCRYPTION_ENABLED
+from app.core.config import ENCRYPTION_ENABLED, ENCRYPTION_EXCLUDED_PATHS
 
 
 class EncryptionMiddleware(BaseHTTPMiddleware):
@@ -13,12 +13,9 @@ class EncryptionMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next):
-        if not ENCRYPTION_ENABLED:
+        if not ENCRYPTION_ENABLED or request.url.path in ENCRYPTION_EXCLUDED_PATHS:
             return await call_next(request)
-        if request.url.path.startswith("/docs") \
-                or request.url.path.startswith("/openapi.json") \
-                or request.url.path.startswith("/auth/login") or request.url.path.startswith("/dev_test/"):
-            return await call_next(request)
+
         if request.method in ("POST", "PUT", "PATCH") and request.headers.get("content-type") == "text/plain":
             try:
                 raw_body = await request.body()
