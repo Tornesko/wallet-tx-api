@@ -61,4 +61,63 @@ ENCRYPTION_ENABLED=false
 * Allows testing with raw JSON
 * Swagger UI works normally
 
+
+---
+
+##  Encryption Debug Endpoints (for testing)
+
+For easier manual testing and debugging, two helper endpoints are available:
+
+###  `/dev_test/encrypt`
+
+Encrypts raw JSON/plaintext into base64-AES format.
+
+**Request:**
+
+```http
+POST /dev_test/encrypt
+Content-Type: application/json
+
+{
+  "data": "{\"currency\": \"BTC\", \"network\": \"bitcoin\"}"
+}
+```
+
+**Response:**
+
+```json
+{
+  "encrypted": "base64-encoded AES-CBC payload"
+}
+```
+
+---
+
+### `/dev_test/decrypt`
+
+Decrypts base64-AES input and returns plaintext.
+
+**Request:**
+
+```http
+POST /dev_test/decrypt
+Content-Type: application/json
+
+{
+  "data": "base64-encrypted-string"
+}
+```
+
+**Response:**
+
+```json
+{
+  "decrypted": "{\"currency\": \"BTC\", \"network\": \"bitcoin\"}"
+}
+```
+
+---
+
+These are useful when testing the API via Postman or Swagger with `ENCRYPTION_ENABLED=true`.
+
 ---
