@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from app.auth.dependencies import get_current_user
 
 from app.api.routes import transactions, callbacks, whitelist, auth, dev
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -10,4 +11,6 @@ router.include_router(callbacks.router, dependencies=[Depends(get_current_user)]
 router.include_router(whitelist.router, dependencies=[Depends(get_current_user)], tags=["whitelist"])
 
 router.include_router(auth.router, tags=["auth"])
-router.include_router(dev.router, tags=["test"])
+
+if settings.DEBUG:
+    router.include_router(dev.router, tags=["test"])

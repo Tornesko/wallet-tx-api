@@ -1,5 +1,3 @@
-import os
-
 from pydantic_settings import BaseSettings
 
 
@@ -12,6 +10,17 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str
     CELERY_RESULT_BACKEND: str
 
+    ENCRYPTION_ENABLED: bool = True
+    DEBUG: bool = False
+
+    ENCRYPTION_EXCLUDED_PATHS: list[str] = [
+        "/docs",
+        "/openapi.json",
+        "/auth/login",
+        "/dev_test/encrypt",
+        "/dev_test/decrypt",
+    ]
+
     model_config = {
         "env_file": ".env",
         "extra": "allow",
@@ -19,13 +28,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-
-ENCRYPTION_ENABLED = os.getenv("ENCRYPTION_ENABLED", "true").lower() == "true"
-
-ENCRYPTION_EXCLUDED_PATHS = [
-    "/docs",
-    "/openapi.json",
-    "/auth/login",
-    "/dev_test/encrypt",
-    "/dev_test/decrypt",
-]

@@ -1,17 +1,11 @@
-import json
 import os
 import base64
 import hmac
 import hashlib
-from functools import wraps
-from fastapi import Request, Response
-from fastapi.responses import PlainTextResponse
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.padding import PKCS7
 from cryptography.hazmat.backends import default_backend
-
-from app.core.config import ENCRYPTION_ENABLED
 
 KEY = os.getenv("AES_PASSPHRASE", "").encode()
 
