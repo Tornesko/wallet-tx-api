@@ -1,9 +1,4 @@
-# Makefile
-
-.PHONY: help build up down restart logs shell web worker beat alembic-init alembic-make alembic-upgrade alembic-downgrade clean
-
 # Variables
-PROJECT_NAME := k_one
 DOCKER_COMPOSE := docker-compose
 PYTHON := docker-compose exec web python
 ALEMBIC := docker-compose exec web alembic
@@ -54,7 +49,3 @@ alembic-upgrade:
 
 alembic-downgrade:
 	$(ALEMBIC) downgrade -1
-
-clean:
-	docker volume rm $$(docker volume ls -q | grep $(PROJECT_NAME)) || true
-	$(MAKE) down

@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.auth.encryption import encrypt, decrypt
-import os
 
 router = APIRouter(prefix="/dev_test", tags=["test"])
 

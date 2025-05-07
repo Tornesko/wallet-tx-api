@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime, timedelta
-from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,7 +37,7 @@ async def get_wallet_with_transactions(wallet_id: int, db: AsyncSession):
     return result.scalar_one_or_none()
 
 
-async def process_wallet_transaction(wallet: Wallet, tx_hash: str, amount: float, db: AsyncSession) -> Optional[Transaction]:
+async def process_wallet_transaction(wallet: Wallet, tx_hash: str, amount: float, db: AsyncSession):
     existing_transaction_result = await db.execute(
         select(Transaction).where(Transaction.tx_hash == tx_hash)
     )

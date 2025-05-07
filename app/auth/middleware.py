@@ -7,8 +7,6 @@ from app.core.config import settings
 class EncryptionMiddleware(BaseHTTPMiddleware):
     """
     Middleware for AES-CBC encrypted request/response bodies.
-
-    Required by spec: all data must be end-to-end encrypted.
     Decrypts incoming text/plain requests; encrypts JSON responses.
     """
 

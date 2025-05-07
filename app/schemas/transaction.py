@@ -6,7 +6,6 @@ from typing import Optional, List
 from pydantic import BaseModel, ConfigDict, HttpUrl
 
 
-# === ENUMS ===
 class WalletStatus(str, enum.Enum):
     NEW = "NEW"
     PENDING = "PENDING"
@@ -19,7 +18,6 @@ class TransactionStatus(str, enum.Enum):
     PENDING = "PENDING"
     PROCESSED = "PROCESSED"
     FAIL = "FAIL"
-
 
 
 class ORMBaseModel(BaseModel):
