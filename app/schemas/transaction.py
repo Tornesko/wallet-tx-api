@@ -7,11 +7,19 @@ from pydantic import BaseModel, ConfigDict, HttpUrl
 
 
 # === ENUMS ===
-class StatusEnum(str, enum.Enum):
+class WalletStatus(str, enum.Enum):
     NEW = "NEW"
     PENDING = "PENDING"
     PROCESSED = "PROCESSED"
     FAIL = "FAIL"
+
+
+class TransactionStatus(str, enum.Enum):
+    NEW = "NEW"
+    PENDING = "PENDING"
+    PROCESSED = "PROCESSED"
+    FAIL = "FAIL"
+
 
 
 class ORMBaseModel(BaseModel):
@@ -29,7 +37,7 @@ class TransactionRead(ORMBaseModel):
     tx_hash: str
     amount: Decimal
     confirmations: int
-    status: StatusEnum
+    status: TransactionStatus
     created_at: datetime
 
 
@@ -45,7 +53,7 @@ class WalletRead(ORMBaseModel):
     address: str
     currency: str
     network: str
-    status: StatusEnum
+    status: WalletStatus
     created_at: datetime
     callback_url: Optional[HttpUrl] = None
 

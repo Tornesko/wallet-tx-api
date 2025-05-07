@@ -7,11 +7,11 @@ class Whitelist(Base):
     __tablename__ = "whitelist"
 
     id = Column(Integer, primary_key=True, index=True)
-    address = Column(String, nullable=False, unique=True)
+    address = Column(String, nullable=False)
     currency = Column(String, nullable=False)
     network = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     __table_args__ = (
-        UniqueConstraint("address", "currency", "network", name="uniq_address_currency_network"),
+        UniqueConstraint("currency", "network", name="uniq_currency_network"),
     )
