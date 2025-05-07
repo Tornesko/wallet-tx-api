@@ -1,5 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
+from typing import Optional
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -36,20 +38,37 @@ async def get_wallet_with_transactions(wallet_id: int, db: AsyncSession):
     return result.scalar_one_or_none()
 
 
-async def on_new_chain_tx(wallet: Wallet, tx_hash: str, amount: float, db: AsyncSession):
+async def on_new_chain_tx(wallet: Wallet, tx_hash: str, amount: float, db: AsyncSession) -> Optional[Transaction]:
+    existing_tx = await db.execute(
+        select(Transaction)
+        .where(Transaction.tx_hash == tx_hash)
+    )
+    if existing_tx.scalar_one_or_none():
+        return None
+
+    txs_result = await db.execute(
+        select(Transaction)
+        .where(Transaction.wallet_id == wallet.id)
+        .order_by(Transaction.created_at)
+    )
+    txs = txs_result.scalars().all()
+
+    is_first = len(txs) == 0
+
     tx = Transaction(
         wallet_id=wallet.id,
         tx_hash=tx_hash,
         amount=amount,
         confirmations=0,
-        status=TransactionStatus.PENDING
+        status=TransactionStatus.PENDING if is_first else TransactionStatus.NEW
     )
     db.add(tx)
 
-    wallet.status = WalletStatus.PENDING
+    if is_first and wallet.status == WalletStatus.NEW:
+        wallet.status = WalletStatus.PENDING
+
     await db.commit()
     await db.refresh(tx)
-    await db.refresh(wallet)
     return tx
 
 

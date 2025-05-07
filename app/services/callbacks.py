@@ -19,11 +19,9 @@ def default_serializer(obj):
         return str(obj)
     elif isinstance(obj, datetime):
         return obj.isoformat()
-    raise TypeError(f"Type {type(obj)} not serializable")
 
 
 async def send_callback(wallet: WalletDetail, db: AsyncSession) -> bool:
-    print("SEEEEEND", wallet.callback_url)
     if not wallet.callback_url:
         return True
 
@@ -35,10 +33,7 @@ async def send_callback(wallet: WalletDetail, db: AsyncSession) -> bool:
     transactions = result.scalars().all()
 
     transaction_data = [
-        {
-            **TransactionRead.model_validate(tx).model_dump(),
-            "amount": str(tx.amount)  # Decimal isn't JSON serializable
-        }
+        TransactionRead.model_validate(tx).model_dump()
         for tx in transactions
     ]
 
